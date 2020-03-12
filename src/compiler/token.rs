@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub mod syntax_kind {
     pub static ANY_KEYWORD: u32 = 0; // any
     pub static BOOL_EANKEYWORD: u32 = 1; // boolean
@@ -106,3 +108,64 @@ pub mod syntax_kind {
     pub static CARETEQUALS_TOKEN: u32 = 104; // ^=
 }
 
+lazy_static! {
+    pub static ref KEYWORDS: HashMap<&'static str,u32> = {
+        let mut m = HashMap::new();
+        m.insert("ANY_KEYWORD",0); // any
+        m.insert("BOOL_EANKEYWORD",1); // boolean
+        m.insert("BREAK_KEYWORD",2); // break
+        m.insert("CASE_KEYWORD",3); // case
+        m.insert("CATCH_KEYWORD",4); // catch
+        m.insert("CLASS_KEYWORD",5); // class
+        m.insert("CONTINUE_KEYWORD",6); // continue
+        m.insert("CONST_KEYWORD",7); // const
+        m.insert("CONSTRUCTOR_KEYWORD",8); // constructor
+        m.insert("DEBUGGER_KEYWORD",9); // debugger
+        m.insert("DECLARE_KEYWORD",10); // declare
+        m.insert("DEFAULT_KEYWORD",11); // default
+        m.insert("DELETE_KEYWORD",12); // delete
+        m.insert("DO_KEYWORD",13); // do
+        m.insert("ELSE_KEYWORD",14); // else
+        m.insert("ENUM_KEYWORD",15); // enum
+        m.insert("EXPORT_KEYWORD",16); // export
+        m.insert("EXTENDS_KEYWORD",17); // extends
+        m.insert("FALSE_KEYWORD",18); // false
+        m.insert("FINALLY_KEYWORD",19); // finally
+        m.insert("FOR_KEYWORD",20); // for
+        m.insert("FUNCTION_KEYWORD",21); // function
+        m.insert("GET_KEYWORD",22); // get
+        m.insert("IF_KEYWORD",23); // if
+        m.insert("IMPLEMENTS_KEYWORD",24); // implements
+        m.insert("IMPORT_KEYWORD",25); // import
+        m.insert("IN_KEYWORD",26); // in
+        m.insert("INSTANCEOF_KEYWORD",27); // instanceof
+        m.insert("INTERFACE_KEYWORD",28); // interface
+        m.insert("LET_KEYWORD",29); // let
+        m.insert("MODULE_KEYWORD",30); // module
+        m.insert("NEW_KEYWORD",31); // new
+        m.insert("NULL_KEYWORD",32); // null
+        m.insert("NUMBER_KEYWORD",33); // number
+        m.insert("PACKAGE_KEYWORD",34); // package
+        m.insert("PRIVATE_KEYWORD",35); // private
+        m.insert("PROTECTED_KEYWORD",36); // protected
+        m.insert("PUBLIC_KEYWORD",37); // public
+        m.insert("REQUIRE_KEYWORD",38); // require
+        m.insert("RETURN_KEYWORD",39); // return
+        m.insert("SET_KEYWORD",40); // set
+        m.insert("STATIC_KEYWORD",41); // static
+        m.insert("STRING_KEYWORD",42); // string
+        m.insert("SUPER_KEYWORD",43); // super
+        m.insert("SWITCH_KEYWORD",44); // switch
+        m.insert("THIS_KEYWORD",45); // this
+        m.insert("THROW_KEYWORD",46); // throw
+        m.insert("TRUE_KEYWORD",47); // true
+        m.insert("TRY_KEYWORD",48); // try
+        m.insert("TYPEOF_KEYWORD",49); // typeof
+        m.insert("VAR_KEYWORD",50); // var
+        m.insert("VOID_KEYWORD",51); // void
+        m.insert("WHILE_KEYWORD",52); // while
+        m.insert("WITH_KEYWORD",53); // with
+        m.insert("YIELD_KEYWORD",54); // yield
+        m
+    };
+}
