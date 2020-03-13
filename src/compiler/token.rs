@@ -1,62 +1,66 @@
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum SyntaxKind {
-    AnyKeyword,                                   // any
-    Booleankeyword,                               // boolean
-    BreakKeyword,                                 // break
-    CaseKeyword,                                  // case
-    CatchKeyword,                                 // catch
-    ClassKeyword,                                 // class
-    ContinueKeyword,                              // continue
-    ConstKeyword,                                 // const
-    ConstructorKeyword,                           // constructor
-    DebuggerKeyword,                              // debugger
-    DeclareKeyword,                               // declare
-    DefaultKeyword,                               // default
-    DeleteKeyword,                                // delete
-    DoKeyword,                                    // do
-    ElseKeyword,                                  // else
-    EnumKeyword,                                  // enum
-    ExportKeyword,                                // export
-    ExtendsKeyword,                               // extends
-    FalseKeyword,                                 // false
-    FinallyKeyword,                               // finally
-    ForKeyword,                                   // for
-    FunctionKeyword,                              // function
-    GetKeyword,                                   // get
-    IfKeyword,                                    // if
-    ImplementsKeyword,                            // implements
-    ImportKeyword,                                // import
-    InKeyword,                                    // in
-    InstanceofKeyword,                            // instanceof
-    InterfaceKeyword,                             // interface
-    LetKeyword,                                   // let
-    ModuleKeyword,                                // module
-    NewKeyword,                                   // new
-    NullKeyword,                                  // null
-    NumberKeyword,                                // number
-    PackageKeyword,                               // package
-    PrivateKeyword,                               // private
-    ProtectedKeyword,                             // protected
-    PublicKeyword,                                // public
-    RequireKeyword,                               // require
-    ReturnKeyword,                                // return
-    SetKeyword,                                   // set
-    StaticKeyword,                                // static
-    StringKeyword,                                // string
-    SuperKeyword,                                 // super
-    SwitchKeyword,                                // switch
-    ThisKeyword,                                  // this
-    ThrowKeyword,                                 // throw
-    TrueKeyword,                                  // true
-    TryKeyword,                                   // try
-    TypeofKeyword,                                // typeof
-    VarKeyword,                                   // var
-    VoidKeyword,                                  // void
-    WhileKeyword,                                 // while
-    WithKeyword,                                  // with
-    YieldKeyword,                                 // yield
+    Unknown,
+    EndOfFileToken,
+    // Keyword
+    AnyKeyword,         // any
+    Booleankeyword,     // boolean
+    BreakKeyword,       // break
+    CaseKeyword,        // case
+    CatchKeyword,       // catch
+    ClassKeyword,       // class
+    ContinueKeyword,    // continue
+    ConstKeyword,       // const
+    ConstructorKeyword, // constructor
+    DebuggerKeyword,    // debugger
+    DeclareKeyword,     // declare
+    DefaultKeyword,     // default
+    DeleteKeyword,      // delete
+    DoKeyword,          // do
+    ElseKeyword,        // else
+    EnumKeyword,        // enum
+    ExportKeyword,      // export
+    ExtendsKeyword,     // extends
+    FalseKeyword,       // false
+    FinallyKeyword,     // finally
+    ForKeyword,         // for
+    FunctionKeyword,    // function
+    GetKeyword,         // get
+    IfKeyword,          // if
+    ImplementsKeyword,  // implements
+    ImportKeyword,      // import
+    InKeyword,          // in
+    InstanceofKeyword,  // instanceof
+    InterfaceKeyword,   // interface
+    LetKeyword,         // let
+    ModuleKeyword,      // module
+    NewKeyword,         // new
+    NullKeyword,        // null
+    NumberKeyword,      // number
+    PackageKeyword,     // package
+    PrivateKeyword,     // private
+    ProtectedKeyword,   // protected
+    PublicKeyword,      // public
+    RequireKeyword,     // require
+    ReturnKeyword,      // return
+    SetKeyword,         // set
+    StaticKeyword,      // static
+    StringKeyword,      // string
+    SuperKeyword,       // super
+    SwitchKeyword,      // switch
+    ThisKeyword,        // this
+    ThrowKeyword,       // throw
+    TrueKeyword,        // true
+    TryKeyword,         // try
+    TypeofKeyword,      // typeof
+    VarKeyword,         // var
+    VoidKeyword,        // void
+    WhileKeyword,       // while
+    WithKeyword,        // with
+    YieldKeyword,       // yield
+    // Punctuation
     OpenbraceToken,                               // {
     ClosebraceToken,                              // }
     OpenparenToken,                               // (
@@ -107,6 +111,8 @@ pub enum SyntaxKind {
     AmpersandequalsToken,                         // &=
     BarequalsToken,                               // |=
     CaretequalsToken,                             // ^=
+    // Identifiers
+    Identifier,
 }
 
 lazy_static! {
