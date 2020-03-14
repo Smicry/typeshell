@@ -1,6 +1,4 @@
-use woody::compiler::token::SyntaxKind;
-use woody::compiler::token::KEYWORDS;
+use woody::compiler::scanner::TEXT_TO_TOKEN;
 fn main() {
-    println!("{:?}", SyntaxKind::AnyKeyword);
-    println!("{:?}", KEYWORDS.get("any"));
+    println!("{:?}", TEXT_TO_TOKEN.get("any"));
 }
