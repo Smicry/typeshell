@@ -64,20 +64,35 @@ lazy_static! {
 }
 
 pub struct Scanner<'a> {
-    pub pos: u32,       // Current position (end position of text of current token)
-    pub len: u32,       // Length of text
-    pub start_pos: u32, // Start position of whitespace before current token
-    pub token_pos: u32, // Start position of text of current token
+    pub text: &'a [u8],
+    pub pos: usize,       // Current position (end position of text of current token)
+    pub len: usize,       // Length of text
+    pub start_pos: usize, // Start position of whitespace before current token
+    pub token_pos: usize, // Start position of text of current token
     pub token: SyntaxKind,
     pub token_value: &'a str,
     pub preceding_line_break: bool,
 }
 
 impl<'a> Scanner<'a> {
-    // pub fn new ()->Self{
-    //     return Scanner{
-
-    //         preceding_line_break:false,
-    //     }
-    // }
+    pub fn new(text: &'a str) -> Self {
+        return Scanner {
+            text: text.as_bytes(),
+            pos: 0,
+            len: text.len(),
+            start_pos: 0,
+            token_pos: 0,
+            token: SyntaxKind::Unknown,
+            token_value: "",
+            preceding_line_break: false,
+        };
+    }
+    pub fn set_text_pos(&mut self, pos: usize) {
+        self.pos = pos;
+        self.start_pos = pos;
+        self.token_pos = pos;
+        self.token = SyntaxKind::Unknown;
+        self.token_value = "";
+        self.preceding_line_break = false;
+    }
 }
