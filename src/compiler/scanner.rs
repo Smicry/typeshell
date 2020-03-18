@@ -62,7 +62,7 @@ lazy_static! {
         m
     };
 }
-
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Scanner<'a> {
     pub text: &'a [u8],
     pub pos: usize,       // Current position (end position of text of current token)
