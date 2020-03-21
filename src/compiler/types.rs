@@ -219,122 +219,114 @@ pub mod markers {
     pub const LAST_PUNCTUATION: SyntaxKind = SyntaxKind::CaretEqualsToken;
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum CharacterCodes {
-    NullCharacter = 0x00,
-    MaxAsciiCharacter = 0x7F,
-
-    LineFeed = 0x0A,       // \n
-    CarriageReturn = 0x0D, // \r
-    Space = 0x20,          // " "
-    Underline = 0x5F,      // _
-    Dollar = 0x24,         // $
+pub mod character_codes {
+    pub const NULL_CHARACTER: u8 = 0x00;
+    pub const MAX_ASCII_CHARACTER: u8 = 0x7F;
+    pub const LINE_FEED: u8 = 0x0A; // \n
+    pub const CARRIAGE_RETURN: u8 = 0x0D; // \r
+    pub const SPACE: u8 = 0x20; // " "
+    pub const UNDERLINE: u8 = 0x5F; // _
+    pub const DOLLAR: u8 = 0x24; // $
 
     // number
-    _0 = 0x30,
-    _1 = 0x31,
-    _2 = 0x32,
-    _3 = 0x33,
-    _4 = 0x34,
-    _5 = 0x35,
-    _6 = 0x36,
-    _7 = 0x37,
-    _8 = 0x38,
-    _9 = 0x39,
+    pub const _0: u8 = 0x30;
+    pub const _1: u8 = 0x31;
+    pub const _2: u8 = 0x32;
+    pub const _3: u8 = 0x33;
+    pub const _4: u8 = 0x34;
+    pub const _5: u8 = 0x35;
+    pub const _6: u8 = 0x36;
+    pub const _7: u8 = 0x37;
+    pub const _8: u8 = 0x38;
+    pub const _9: u8 = 0x39;
 
-    // lowercase
-    _A = 0x61,
-    _B = 0x62,
-    _C = 0x63,
-    _D = 0x64,
-    _E = 0x65,
-    _F = 0x66,
-    _G = 0x67,
-    _H = 0x68,
-    _I = 0x69,
-    _J = 0x6A,
-    _K = 0x6B,
-    _L = 0x6C,
-    _M = 0x6D,
-    _N = 0x6E,
-    _O = 0x6F,
-    _P = 0x70,
-    _Q = 0x71,
-    _R = 0x72,
-    _S = 0x73,
-    _T = 0x74,
-    _U = 0x75,
-    _V = 0x76,
-    _W = 0x77,
-    _X = 0x78,
-    _Y = 0x79,
-    _Z = 0x7A,
+    // // lowercase
+    pub const _A: u8 = 0x61;
+    pub const _B: u8 = 0x62;
+    pub const _C: u8 = 0x63;
+    pub const _D: u8 = 0x64;
+    pub const _E: u8 = 0x65;
+    pub const _F: u8 = 0x66;
+    pub const _G: u8 = 0x67;
+    pub const _H: u8 = 0x68;
+    pub const _I: u8 = 0x69;
+    pub const _J: u8 = 0x6A;
+    pub const _K: u8 = 0x6B;
+    pub const _L: u8 = 0x6C;
+    pub const _M: u8 = 0x6D;
+    pub const _N: u8 = 0x6E;
+    pub const _O: u8 = 0x6F;
+    pub const _P: u8 = 0x70;
+    pub const _Q: u8 = 0x71;
+    pub const _R: u8 = 0x72;
+    pub const _S: u8 = 0x73;
+    pub const _T: u8 = 0x74;
+    pub const _U: u8 = 0x75;
+    pub const _V: u8 = 0x76;
+    pub const _W: u8 = 0x77;
+    pub const _X: u8 = 0x78;
+    pub const _Y: u8 = 0x79;
+    pub const _Z: u8 = 0x7A;
 
-    // uppercase
-    A = 0x41,
-    B = 0x42,
-    C = 0x43,
-    D = 0x44,
-    E = 0x45,
-    F = 0x46,
-    G = 0x47,
-    H = 0x48,
-    I = 0x49,
-    J = 0x4A,
-    K = 0x4B,
-    L = 0x4C,
-    M = 0x4D,
-    N = 0x4E,
-    O = 0x4F,
-    P = 0x50,
-    Q = 0x51,
-    R = 0x52,
-    S = 0x53,
-    T = 0x54,
-    U = 0x55,
-    V = 0x56,
-    W = 0x57,
-    X = 0x58,
-    Y = 0x59,
-    Z = 0x5a,
+    // // uppercase
+    pub const A: u8 = 0x41;
+    pub const B: u8 = 0x42;
+    pub const C: u8 = 0x43;
+    pub const D: u8 = 0x44;
+    pub const E: u8 = 0x45;
+    pub const F: u8 = 0x46;
+    pub const G: u8 = 0x47;
+    pub const H: u8 = 0x48;
+    pub const I: u8 = 0x49;
+    pub const J: u8 = 0x4A;
+    pub const K: u8 = 0x4B;
+    pub const L: u8 = 0x4C;
+    pub const M: u8 = 0x4D;
+    pub const N: u8 = 0x4E;
+    pub const O: u8 = 0x4F;
+    pub const P: u8 = 0x50;
+    pub const Q: u8 = 0x51;
+    pub const R: u8 = 0x52;
+    pub const S: u8 = 0x53;
+    pub const T: u8 = 0x54;
+    pub const U: u8 = 0x55;
+    pub const V: u8 = 0x56;
+    pub const W: u8 = 0x57;
+    pub const X: u8 = 0x58;
+    pub const Y: u8 = 0x59;
+    pub const Z: u8 = 0x5a;
 
-    Ampersand = 0x26,    // &
-    Asterisk = 0x2A,     // *
-    At = 0x40,           // @
-    Backslash = 0x5C,    // \
-    Bar = 0x7C,          // |
-    Caret = 0x5E,        // ^
-    CloseBrace = 0x7D,   // }
-    CloseBracket = 0x5D, // ]
-    CloseParen = 0x29,   // )
-    Colon = 0x3A,        // :
-    Comma = 0x2C,        // ,
-    Dot = 0x2E,          // .
-    DoubleQuote = 0x22,  // "
-    Equals = 0x3D,       // =
-    Exclamation = 0x21,  // !
-    GreaterThan = 0x3E,  // >
-    LessThan = 0x3C,     // <
-    Minus = 0x2D,        // -
-    OpenBrace = 0x7B,    // {
-    OpenBracket = 0x5B,  // [
-    OpenParen = 0x28,    // (
-    Percent = 0x25,      // %
-    Plus = 0x2B,         // +
-    Question = 0x3F,     // ?
-    Semicolon = 0x3B,    // ;
-    SingleQuote = 0x27,  // '
-    Slash = 0x2F,        // /
-    Tilde = 0x7E,        // ~
+    pub const AMPERSAND: u8 = 0x26; // &
+    pub const ASTERISK: u8 = 0x2A; // *
+    pub const AT: u8 = 0x40; // @
+    pub const BACKSLASH: u8 = 0x5C; // \
+    pub const BAR: u8 = 0x7C; // |
+    pub const CARET: u8 = 0x5E; // ^
+    pub const CLOSE_BRACE: u8 = 0x7D; // }
+    pub const CLOSE_BRACKET: u8 = 0x5D; // ]
+    pub const CLOSE_PAREN: u8 = 0x29; // )
+    pub const COLON: u8 = 0x3A; // :
+    pub const COMMA: u8 = 0x2C; // ,
+    pub const DOT: u8 = 0x2E; // .
+    pub const DOUBLE_QUOTE: u8 = 0x22; // "
+    pub const EQUALS: u8 = 0x3D; // =
+    pub const EXCLAMATION: u8 = 0x21; // !
+    pub const GREATER_THAN: u8 = 0x3E; // >
+    pub const LESS_THAN: u8 = 0x3C; // <
+    pub const MINUS: u8 = 0x2D; // -
+    pub const OPEN_BRACE: u8 = 0x7B; // {
+    pub const OPEN_BRACKET: u8 = 0x5B; // [
+    pub const OPEN_PAREN: u8 = 0x28; // (
+    pub const PERCENT: u8 = 0x25; // %
+    pub const PLUS: u8 = 0x2B; // +
+    pub const QUESTION: u8 = 0x3F; // ?
+    pub const SEMICOLON: u8 = 0x3B; // ;
+    pub const SINGLE_QUOTE: u8 = 0x27; // '
+    pub const SLASH: u8 = 0x2F; // /
+    pub const TILDE: u8 = 0x7E; // ~
 
-    Backspace = 0x08,   // \b
-    FormFeed = 0x0C,    // \f
-    Tab = 0x09,         // \t
-    VerticalTab = 0x0B, // \v
-}
-
-impl CharacterCodes {
-    pub fn to_byte(&self) -> u8 {
-        return *self as u8;
-    }
+    pub const BACKSPACE: u8 = 0x08; // \b
+    pub const FORM_FEED: u8 = 0x0C; // \f
+    pub const TAB: u8 = 0x09; // \t
+    pub const VERTICAL_TAB: u8 = 0x0B; // \v
 }

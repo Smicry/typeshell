@@ -1,4 +1,4 @@
-use super::types::SyntaxKind;
+use super::types::{character_codes, SyntaxKind};
 use std::collections::HashMap;
 
 lazy_static! {
@@ -87,6 +87,69 @@ impl<'a> Scanner<'a> {
             preceding_line_break: false,
         };
     }
+
+    pub fn scan(&mut self) -> SyntaxKind {
+        self.start_pos = self.pos;
+        self.preceding_line_break = false;
+        loop {
+            self.token_pos = self.pos;
+            match self.text.get(self.pos) {
+                // None means self.pos >= self.len
+                None => {
+                    self.token = SyntaxKind::EndOfFileToken;
+                    return self.token;
+                }
+                Some(&ch) => match ch {
+                    character_codes::LINE_FEED => {}
+                    character_codes::CARRIAGE_RETURN => {
+                        self.preceding_line_break = true;
+                    }
+                    character_codes::TAB => {}
+                    character_codes::VERTICAL_TAB => {}
+                    character_codes::FORM_FEED => {}
+                    character_codes::SPACE => {
+                        self.pos += 1;
+                        continue;
+                    }
+                    character_codes::EXCLAMATION => {
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            if self.compare_code(self.pos + 2, character_codes::EQUALS) {
+                                self.pos += 3;
+                                self.token = SyntaxKind::ExclamationEqualsEqualsToken;
+                                return self.token;
+                            }
+                            self.pos += 2;
+                            self.token = SyntaxKind::ExclamationEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::ExclamationToken;
+                        return self.token;
+                    }
+                    character_codes::DOUBLE_QUOTE => {}
+                    character_codes::SINGLE_QUOTE => {
+                        self.token_value = self.scan_string();
+                        self.token = SyntaxKind::StringLiteral;
+                        return self.token;
+                    }
+                    // default x
+                    x if x >= character_codes::MAX_ASCII_CHARACTER => {}
+                },
+            }
+        }
+    }
+
+    pub fn scan_string(&mut self) -> &'a str {
+        return "";
+    }
+
+    pub fn compare_code(&self, pos: usize, code: u8) -> bool {
+        match self.text.get(pos) {
+            Some(&ch) => ch == code,
+            None => false,
+        }
+    }
+
     pub fn set_text_pos(&mut self, pos: usize) {
         self.pos = pos;
         self.start_pos = pos;
