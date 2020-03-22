@@ -1,5 +1,6 @@
 use woody::compiler::scanner::Scanner;
 fn main() {
-    let s = Scanner::new("");
-    println!("{:?}", s.text.get(s.pos));
+    let mut s = Scanner::new("你好!");
+    s.scan();
+    println!("{:?}", s);
 }

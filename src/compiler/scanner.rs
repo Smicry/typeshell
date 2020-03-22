@@ -128,20 +128,56 @@ impl<'a> Scanner<'a> {
                     }
                     character_codes::DOUBLE_QUOTE => {}
                     character_codes::SINGLE_QUOTE => {
-                        self.token_value = self.scan_string();
+                        //TODO:
+                        // self.token_value = self.scan_string();
                         self.token = SyntaxKind::StringLiteral;
                         return self.token;
                     }
-                    // default x
-                    x if x >= character_codes::MAX_ASCII_CHARACTER => {}
+                    character_codes::PERCENT => {
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::PercentEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::PercentToken;
+                        return self.token;
+                    }
+                    character_codes::AMPERSAND => {
+                        if self.compare_code(self.pos + 1, character_codes::AMPERSAND) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::AmpersandAmpersandToken;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::AmpersandEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::AmpersandToken;
+                        return self.token;
+                    }
+                    default => {
+                        panic!("default:{}", default);
+                    }
                 },
             }
         }
     }
 
-    pub fn scan_string(&mut self) -> &'a str {
-        return "";
-    }
+    // pub fn scan_string(&'a mut self) -> &'a str {
+    //     self.pos += 1;
+    //     let result: String = "".to_string();
+    //     self.start_pos = self.pos;
+
+    //     match self.text.get(self.pos) {
+    //         Some(n)=>{},
+    //         None=>{},
+    //     }
+
+    //     return result.as_str();
+    // }
 
     pub fn compare_code(&self, pos: usize, code: u8) -> bool {
         match self.text.get(pos) {

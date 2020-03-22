@@ -222,9 +222,14 @@ pub mod markers {
 pub mod character_codes {
     pub const NULL_CHARACTER: u8 = 0x00;
     pub const MAX_ASCII_CHARACTER: u8 = 0x7F;
+
     pub const LINE_FEED: u8 = 0x0A; // \n
     pub const CARRIAGE_RETURN: u8 = 0x0D; // \r
-    pub const SPACE: u8 = 0x20; // " "
+    pub const NEXT_LINE: u8 = 0x0085;
+
+    pub const SPACE: u8 = 0x0020; // " "
+    pub const NON_BREAKING_SPACE: u8 = 0x00A0; //
+
     pub const UNDERLINE: u8 = 0x5F; // _
     pub const DOLLAR: u8 = 0x24; // $
 
