@@ -100,16 +100,15 @@ impl<'a> Scanner<'a> {
                     return self.token;
                 }
                 Some(&ch) => match ch {
-                    character_codes::LINE_FEED => {}
-                    character_codes::CARRIAGE_RETURN => {
+                    character_codes::LINE_FEED | character_codes::CARRIAGE_RETURN => {
                         self.preceding_line_break = true;
-                    }
-                    character_codes::TAB => {}
-                    character_codes::VERTICAL_TAB => {}
-                    character_codes::FORM_FEED => {}
-                    character_codes::SPACE => {
                         self.pos += 1;
-                        continue;
+                    }
+                    character_codes::TAB
+                    | character_codes::VERTICAL_TAB
+                    | character_codes::FORM_FEED
+                    | character_codes::SPACE => {
+                        self.pos += 1;
                     }
                     character_codes::EXCLAMATION => {
                         if self.compare_code(self.pos + 1, character_codes::EQUALS) {
@@ -126,10 +125,8 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::ExclamationToken;
                         return self.token;
                     }
-                    character_codes::DOUBLE_QUOTE => {}
-                    character_codes::SINGLE_QUOTE => {
-                        //TODO:
-                        // self.token_value = self.scan_string();
+                    character_codes::DOUBLE_QUOTE | character_codes::SINGLE_QUOTE => {
+                        self.scan_string();
                         self.token = SyntaxKind::StringLiteral;
                         return self.token;
                     }
@@ -166,18 +163,18 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    // pub fn scan_string(&'a mut self) -> &'a str {
-    //     self.pos += 1;
-    //     let result: String = "".to_string();
-    //     self.start_pos = self.pos;
+    //TODO:
+    pub fn scan_string(&mut self) {
+        self.pos += 1;
+        self.token_value = "";
+        let mut result: String = "".to_string();
+        self.start_pos = self.pos;
 
-    //     match self.text.get(self.pos) {
-    //         Some(n)=>{},
-    //         None=>{},
-    //     }
-
-    //     return result.as_str();
-    // }
+        match self.text.get(self.pos) {
+            Some(&n) => result.push(n as char),
+            None => {}
+        }
+    }
 
     pub fn compare_code(&self, pos: usize, code: u8) -> bool {
         match self.text.get(pos) {
