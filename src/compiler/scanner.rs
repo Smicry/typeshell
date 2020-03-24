@@ -62,7 +62,7 @@ lazy_static! {
         m
     };
 }
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Scanner<'a> {
     pub text: &'a [u8],
     pub pos: usize,       // Current position (end position of text of current token)
@@ -70,7 +70,7 @@ pub struct Scanner<'a> {
     pub start_pos: usize, // Start position of whitespace before current token
     pub token_pos: usize, // Start position of text of current token
     pub token: SyntaxKind,
-    pub token_value: &'a str,
+    pub token_value: String,
     pub preceding_line_break: bool,
 }
 
@@ -83,7 +83,7 @@ impl<'a> Scanner<'a> {
             start_pos: 0,
             token_pos: 0,
             token: SyntaxKind::Unknown,
-            token_value: "",
+            token_value: "".to_string(),
             preceding_line_break: false,
         };
     }
@@ -126,7 +126,7 @@ impl<'a> Scanner<'a> {
                         return self.token;
                     }
                     character_codes::DOUBLE_QUOTE | character_codes::SINGLE_QUOTE => {
-                        self.scan_string();
+                        self.token_value = self.scan_string();
                         self.token = SyntaxKind::StringLiteral;
                         return self.token;
                     }
@@ -163,16 +163,30 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    //TODO:
-    pub fn scan_string(&mut self) {
-        self.pos += 1;
-        self.token_value = "";
-        let mut result: String = "".to_string();
-        self.start_pos = self.pos;
-
+    pub fn scan_string(&mut self) -> String {
+        let mut result = "".to_string();
         match self.text.get(self.pos) {
-            Some(&n) => result.push(n as char),
-            None => {}
+            //TODO:转义字符待处理
+            // self.pos += 1;
+            // self.start_pos = self.pos;
+            // loop {
+            //     match self.text.get(self.pos) {
+            //         Some(&next) => {
+            //             if next == quote {
+            //                 self.pos += 1;
+            //                 break;
+            //             }
+            //             if next == character_codes::BACKSLASH {}
+            //         }
+            //         None => {
+            //             println!("Unexpected end of text.");
+            //             break;
+            //         }
+            //     }
+            // }
+            // self.token_value = result.as_str();
+            Some(&quote) => result,
+            None => "".to_string(),
         }
     }
 
