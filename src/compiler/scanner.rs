@@ -126,7 +126,7 @@ impl<'a> Scanner<'a> {
                         return self.token;
                     }
                     character_codes::DOUBLE_QUOTE | character_codes::SINGLE_QUOTE => {
-                        self.token_value = self.scan_string();
+                        self.token_value = self.scan_string(ch);
                         self.token = SyntaxKind::StringLiteral;
                         return self.token;
                     }
@@ -163,30 +163,40 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn scan_string(&mut self) -> String {
+    pub fn scan_string(&mut self, quote: u8) -> String {
         let mut result = "".to_string();
-        match self.text.get(self.pos) {
-            //TODO:转义字符待处理
-            // self.pos += 1;
-            // self.start_pos = self.pos;
-            // loop {
-            //     match self.text.get(self.pos) {
-            //         Some(&next) => {
-            //             if next == quote {
-            //                 self.pos += 1;
-            //                 break;
-            //             }
-            //             if next == character_codes::BACKSLASH {}
-            //         }
-            //         None => {
-            //             println!("Unexpected end of text.");
-            //             break;
-            //         }
-            //     }
-            // }
-            // self.token_value = result.as_str();
-            Some(&quote) => result,
-            None => "".to_string(),
+        self.pos += 1;
+        loop {
+            match self.text.get(self.pos) {
+                Some(&next) => {
+                    if next == quote {
+                        self.pos += 1;
+                        break;
+                    }
+                    //TODO:deal backslash
+                    if next == character_codes::BACKSLASH {}
+                    if Scanner::is_linebreak(next) {
+                        println!("Unterminated string literal.");
+                        break;
+                    }
+                    result.push(next as char);
+                    self.pos += 1;
+                }
+                None => {
+                    println!("Unexpected end of text.");
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    pub fn is_linebreak(ch: u8) -> bool {
+        match ch {
+            character_codes::LINE_FEED
+            | character_codes::CARRIAGE_RETURN
+            | character_codes::NEXT_LINE => true,
+            _ => false,
         }
     }
 
@@ -202,7 +212,7 @@ impl<'a> Scanner<'a> {
         self.start_pos = pos;
         self.token_pos = pos;
         self.token = SyntaxKind::Unknown;
-        self.token_value = "";
+        self.token_value = "".to_string();
         self.preceding_line_break = false;
     }
 }
