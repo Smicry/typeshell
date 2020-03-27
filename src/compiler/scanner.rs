@@ -155,6 +155,26 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::AmpersandToken;
                         return self.token;
                     }
+                    character_codes::OPEN_PAREN => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::OpenParenToken;
+                        return self.token;
+                    }
+                    character_codes::CLOSE_PAREN => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::CloseParenToken;
+                        return self.token;
+                    }
+                    character_codes::ASTERISK => {
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::AsteriskEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::AsteriskToken;
+                        return self.token;
+                    }
                     default => {
                         panic!("default:{}", default);
                     }
