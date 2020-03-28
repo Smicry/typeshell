@@ -175,6 +175,41 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::AsteriskToken;
                         return self.token;
                     }
+                    character_codes::PLUS => {
+                        if self.compare_code(self.pos + 1, character_codes::PLUS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::PlusPlusToken;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::PlusEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::PlusToken;
+                        return self.token;
+                    }
+                    character_codes::COMMA => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::CommaToken;
+                        return self.token;
+                    }
+                    character_codes::MINUS => {
+                        if self.compare_code(self.pos + 1, character_codes::MINUS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::MinusMinusToken;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::MinusEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::MinusToken;
+                        return self.token;
+                    }
                     default => {
                         panic!("default:{}", default);
                     }
