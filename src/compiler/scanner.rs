@@ -210,12 +210,44 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::MinusToken;
                         return self.token;
                     }
+                    character_codes::DOT => {
+                        if self.is_digit(self.pos + 1) {
+                            self.token_value = self.scan_number();
+                            self.token = SyntaxKind::NumericLiteral;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::DOT)
+                            && self.compare_code(self.pos + 2, character_codes::DOT)
+                        {
+                            self.pos += 3;
+                            self.token = SyntaxKind::DotDotDotToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::DotToken;
+                        return self.token;
+                    }
                     default => {
                         panic!("default:{}", default);
                     }
                 },
             }
         }
+    }
+
+    pub fn scan_number(&mut self) -> String {
+        let mut result = "".to_string();
+        while self.is_digit(self.pos) {
+            match self.text.get(self.pos) {
+                Some(&current) => {
+                    result.push(current as char);
+                    self.pos += 1;
+                }
+                None => break,
+            }
+        }
+        //TODO:deal scientific notation
+        return result;
     }
 
     pub fn scan_string(&mut self, quote: u8) -> String {
@@ -244,6 +276,20 @@ impl<'a> Scanner<'a> {
             }
         }
         return result;
+    }
+
+    pub fn is_digit(&self, pos: usize) -> bool {
+        match self.text.get(pos) {
+            Some(&next) => next >= character_codes::_0 && next <= character_codes::_9,
+            None => false,
+        }
+    }
+
+    pub fn is_octaldigit(&self, pos: usize) -> bool {
+        match self.text.get(pos) {
+            Some(&next) => next >= character_codes::_0 && next <= character_codes::_7,
+            None => false,
+        }
     }
 
     pub fn is_linebreak(ch: u8) -> bool {
