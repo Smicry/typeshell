@@ -246,7 +246,23 @@ impl<'a> Scanner<'a> {
                 None => break,
             }
         }
+        if self.compare_code(self.pos, character_codes::DOT) {
+            self.pos += 1;
+            result.push(character_codes::DOT as char);
+            while self.is_digit(self.pos) {
+                match self.text.get(self.pos) {
+                    Some(&current) => {
+                        result.push(current as char);
+                        self.pos += 1;
+                    }
+                    None => break,
+                }
+            }
+        }
         //TODO:deal scientific notation
+        if self.compare_code(self.pos, character_codes::E)
+            || self.compare_code(self.pos, character_codes::_E)
+        {}
         return result;
     }
 
