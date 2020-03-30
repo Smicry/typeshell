@@ -227,6 +227,60 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::DotToken;
                         return self.token;
                     }
+                    character_codes::SLASH => {
+                        // Single-line comment
+                        if self.compare_code(self.pos + 1, character_codes::SLASH) {
+                            self.pos += 2;
+                            loop {
+                                match self.text.get(self.pos) {
+                                    Some(&next) => {
+                                        if Scanner::is_linebreak(next) {
+                                            break;
+                                        }
+                                        self.pos += 1;
+                                    }
+                                    None => break,
+                                }
+                            }
+                            continue;
+                        }
+                        // Multi-line comment
+                        if self.compare_code(self.pos + 1, character_codes::ASTERISK) {
+                            self.pos += 2;
+                            let mut comment_closed = false;
+                            loop {
+                                match self.text.get(self.pos) {
+                                    Some(&next) => {
+                                        if next == character_codes::ASTERISK
+                                            && self
+                                                .compare_code(self.pos + 1, character_codes::SLASH)
+                                        {
+                                            self.pos += 2;
+                                            comment_closed = true;
+                                            break;
+                                        }
+                                        if Scanner::is_linebreak(next) {
+                                            self.preceding_line_break = true;
+                                        }
+                                        self.pos += 1;
+                                    }
+                                    None => break,
+                                }
+                            }
+                            if !comment_closed {
+                                println!("'*/' expected.")
+                            }
+                            continue;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::SlashEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::SlashToken;
+                        return self.token;
+                    }
                     default => {
                         panic!("default:{}", default);
                     }
