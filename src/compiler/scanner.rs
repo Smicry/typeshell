@@ -252,8 +252,7 @@ impl<'a> Scanner<'a> {
                                 match self.text.get(self.pos) {
                                     Some(&next) => {
                                         if next == character_codes::ASTERISK
-                                            && self
-                                                .compare_code(self.pos + 1, character_codes::SLASH)
+                                            && self.compare_code(self.pos + 1, character_codes::SLASH)
                                         {
                                             self.pos += 2;
                                             comment_closed = true;
@@ -279,6 +278,51 @@ impl<'a> Scanner<'a> {
                         }
                         self.pos += 1;
                         self.token = SyntaxKind::SlashToken;
+                        return self.token;
+                    }
+                    // TODO:deal Hex and Octal
+                    character_codes::_0
+                    | character_codes::_1
+                    | character_codes::_2
+                    | character_codes::_3
+                    | character_codes::_4
+                    | character_codes::_5
+                    | character_codes::_6
+                    | character_codes::_7
+                    | character_codes::_8
+                    | character_codes::_9 => {
+                        self.token_value = self.scan_number();
+                        self.token = SyntaxKind::NumericLiteral;
+                        return self.token;
+                    }
+                    character_codes::COLON => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::ColonToken;
+                        return self.token;
+                    }
+                    character_codes::SEMICOLON => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::SemicolonToken;
+                        return self.token;
+                    }
+                    character_codes::LESS_THAN => {
+                        if self.compare_code(self.pos + 1, character_codes::LESS_THAN) {
+                            if self.compare_code(self.pos + 2, character_codes::EQUALS) {
+                                self.pos += 3;
+                                self.token = SyntaxKind::LessThanLessThanEqualsToken;
+                                return self.token;
+                            }
+                            self.pos += 2;
+                            self.token = SyntaxKind::LessThanLessThanToken;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::LessThanEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::LessThanToken;
                         return self.token;
                     }
                     default => {
@@ -313,10 +357,8 @@ impl<'a> Scanner<'a> {
                 }
             }
         }
-        //TODO:deal scientific notation
-        if self.compare_code(self.pos, character_codes::E)
-            || self.compare_code(self.pos, character_codes::_E)
-        {}
+        // TODO:deal scientific notation
+        if self.compare_code(self.pos, character_codes::E) || self.compare_code(self.pos, character_codes::_E) {}
         return result;
     }
 
@@ -330,7 +372,7 @@ impl<'a> Scanner<'a> {
                         self.pos += 1;
                         break;
                     }
-                    //TODO:deal backslash
+                    // TODO:deal backslash
                     if next == character_codes::BACKSLASH {}
                     if Scanner::is_linebreak(next) {
                         println!("Unterminated string literal.");
@@ -364,9 +406,7 @@ impl<'a> Scanner<'a> {
 
     pub fn is_linebreak(ch: u8) -> bool {
         match ch {
-            character_codes::LINE_FEED
-            | character_codes::CARRIAGE_RETURN
-            | character_codes::NEXT_LINE => true,
+            character_codes::LINE_FEED | character_codes::CARRIAGE_RETURN | character_codes::NEXT_LINE => true,
             _ => false,
         }
     }

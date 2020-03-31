@@ -4,3 +4,4 @@
 ## todo list
 * [ ] function scan_string need to deal backslash
 * [ ] function scan_number need to deal scientific notation
+* [ ] character_codes::_0 need to deal Hex and Octal
