@@ -325,8 +325,48 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::LessThanToken;
                         return self.token;
                     }
+                    character_codes::EQUALS => {
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            if self.compare_code(self.pos + 2, character_codes::EQUALS) {
+                                self.pos += 3;
+                                self.token = SyntaxKind::EqualsEqualsEqualsToken;
+                                return self.token;
+                            }
+                            self.pos += 2;
+                            self.token = SyntaxKind::EqualsEqualsToken;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::GREATER_THAN) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::EqualsGreaterThanToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::EqualsToken;
+                        return self.token;
+                    }
+                    character_codes::GREATER_THAN => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::GreaterThanToken;
+                        return self.token;
+                    }
+                    character_codes::QUESTION => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::QuestionToken;
+                        return self.token;
+                    }
+                    character_codes::OPEN_BRACKET => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::OpenBracketToken;
+                        return self.token;
+                    }
+                    character_codes::CLOSE_BRACKET => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::CloseBracketToken;
+                        return self.token;
+                    }
                     default => {
-                        panic!("default:{}", default);
+                        println!("default:{}", default);
                     }
                 },
             }
