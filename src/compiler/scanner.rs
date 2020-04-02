@@ -365,6 +365,53 @@ impl<'a> Scanner<'a> {
                         self.token = SyntaxKind::CloseBracketToken;
                         return self.token;
                     }
+                    character_codes::CARET => {
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::CaretEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::CaretToken;
+                        return self.token;
+                    }
+                    character_codes::OPEN_BRACE => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::OpenBraceToken;
+                        return self.token;
+                    }
+                    character_codes::BAR => {
+                        if self.compare_code(self.pos + 1, character_codes::BAR) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::BarBarToken;
+                            return self.token;
+                        }
+                        if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                            self.pos += 2;
+                            self.token = SyntaxKind::BarEqualsToken;
+                            return self.token;
+                        }
+                        self.pos += 1;
+                        self.token = SyntaxKind::BarToken;
+                        return self.token;
+                    }
+                    character_codes::CLOSE_BRACE => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::CloseBraceToken;
+                        return self.token;
+                    }
+                    character_codes::TILDE => {
+                        self.pos += 1;
+                        self.token = SyntaxKind::TildeToken;
+                        return self.token;
+                    }
+                    character_codes::BACKSLASH => {
+                        // TODO:deal Unicode
+                        println!("Invalid character.");
+                        self.pos += 1;
+                        self.token = SyntaxKind::Unknown;
+                        return self.token;
+                    }
                     default => {
                         println!("default:{}", default);
                     }
