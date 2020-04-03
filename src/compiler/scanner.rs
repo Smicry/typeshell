@@ -413,7 +413,27 @@ impl<'a> Scanner<'a> {
                         return self.token;
                     }
                     default => {
-                        println!("default:{}", default);
+                        if Scanner::is_identifier_start(default) {
+                            self.pos += 1;
+                        // TODO:
+                        // while (pos < len && isIdentifierPart(ch = text.charCodeAt(pos))) pos++;
+                        // tokenValue = text.substring(tokenPos, pos);
+                        // if (ch === CharacterCodes.backslash) {
+                        //     tokenValue += scanIdentifierParts();
+                        // }
+                        // return token = getIdentifierToken();
+                        } else if Scanner::is_white_space(default) {
+                            self.pos += 1;
+                            continue;
+                        } else if Scanner::is_linebreak(default) {
+                            self.preceding_line_break = true;
+                            self.pos += 1;
+                            continue;
+                        }
+                        println!("Invalid character.");
+                        self.pos += 1;
+                        self.token = SyntaxKind::Unknown;
+                        return self.token;
                     }
                 },
             }
@@ -477,6 +497,23 @@ impl<'a> Scanner<'a> {
         return result;
     }
 
+    pub fn is_identifier_start(ch: u8) -> bool {
+        // TODO: || ch > character_codes::MAX_ASCII_CHARACTER && isUnicodeIdentifierStart()
+        return ch >= character_codes::A && ch <= character_codes::Z
+            || ch >= character_codes::_A && ch <= character_codes::_Z
+            || ch == character_codes::DOLLAR
+            || ch == character_codes::UNDERLINE;
+    }
+
+    pub fn is_identifier_part(ch: u8) -> bool {
+        // TODO: || ch > character_codes::MAX_ASCII_CHARACTER && isUnicodeIdentifierPart()
+        return ch >= character_codes::A && ch <= character_codes::Z
+            || ch >= character_codes::_A && ch <= character_codes::_Z
+            || ch >= character_codes::_0 && ch <= character_codes::_9
+            || ch == character_codes::DOLLAR
+            || ch == character_codes::UNDERLINE;
+    }
+
     pub fn is_digit(&self, pos: usize) -> bool {
         match self.text.get(pos) {
             Some(&next) => next >= character_codes::_0 && next <= character_codes::_9,
@@ -491,12 +528,28 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    pub fn is_white_space(ch: u8) -> bool {
+        return ch == character_codes::SPACE
+            || ch == character_codes::TAB
+            || ch == character_codes::VERTICAL_TAB
+            || ch == character_codes::FORM_FEED
+            || ch == character_codes::NON_BREAKING_SPACE;
+    }
+
     pub fn is_linebreak(ch: u8) -> bool {
         match ch {
             character_codes::LINE_FEED | character_codes::CARRIAGE_RETURN | character_codes::NEXT_LINE => true,
             _ => false,
         }
     }
+
+    // pub fn sub_str(&self, start: usize, end: usize) -> String {
+    //     let mut result = "".to_string();
+    //     let ch=&self.text[start..end];
+
+    //     result.push(current as char);
+    //     return "".to_string();
+    // }
 
     pub fn compare_code(&self, pos: usize, code: u8) -> bool {
         match self.text.get(pos) {
