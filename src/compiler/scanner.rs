@@ -231,16 +231,11 @@ impl<'a> Scanner<'a> {
                         // Single-line comment
                         if self.compare_code(self.pos + 1, character_codes::SLASH) {
                             self.pos += 2;
-                            loop {
-                                match self.text.get(self.pos) {
-                                    Some(&next) => {
-                                        if Scanner::is_linebreak(next) {
-                                            break;
-                                        }
-                                        self.pos += 1;
-                                    }
-                                    None => break,
+                            while let Some(&next) = self.text.get(self.pos) {
+                                if Scanner::is_linebreak(next) {
+                                    break;
                                 }
+                                self.pos += 1;
                             }
                             continue;
                         }
@@ -248,23 +243,18 @@ impl<'a> Scanner<'a> {
                         if self.compare_code(self.pos + 1, character_codes::ASTERISK) {
                             self.pos += 2;
                             let mut comment_closed = false;
-                            loop {
-                                match self.text.get(self.pos) {
-                                    Some(&next) => {
-                                        if next == character_codes::ASTERISK
-                                            && self.compare_code(self.pos + 1, character_codes::SLASH)
-                                        {
-                                            self.pos += 2;
-                                            comment_closed = true;
-                                            break;
-                                        }
-                                        if Scanner::is_linebreak(next) {
-                                            self.preceding_line_break = true;
-                                        }
-                                        self.pos += 1;
-                                    }
-                                    None => break,
+                            while let Some(&next) = self.text.get(self.pos) {
+                                if next == character_codes::ASTERISK
+                                    && self.compare_code(self.pos + 1, character_codes::SLASH)
+                                {
+                                    self.pos += 2;
+                                    comment_closed = true;
+                                    break;
                                 }
+                                if Scanner::is_linebreak(next) {
+                                    self.preceding_line_break = true;
+                                }
+                                self.pos += 1;
                             }
                             if !comment_closed {
                                 println!("'*/' expected.")
@@ -415,9 +405,15 @@ impl<'a> Scanner<'a> {
                     default => {
                         if Scanner::is_identifier_start(default) {
                             self.pos += 1;
-                        // TODO:
-                        // while (pos < len && isIdentifierPart(ch = text.charCodeAt(pos))) pos++;
-                        // tokenValue = text.substring(tokenPos, pos);
+                            while let Some(&current) = self.text.get(self.pos) {
+                                if !Scanner::is_identifier_part(current) {
+                                    break;
+                                }
+                                self.pos += 1;
+                            }
+                            self.token_value = self.sub_str(self.token_pos, self.pos);
+                            // TODO:
+                            if default == character_codes::SLASH {}
                         // if (ch === CharacterCodes.backslash) {
                         //     tokenValue += scanIdentifierParts();
                         // }
@@ -472,27 +468,19 @@ impl<'a> Scanner<'a> {
     pub fn scan_string(&mut self, quote: u8) -> String {
         let mut result = "".to_string();
         self.pos += 1;
-        loop {
-            match self.text.get(self.pos) {
-                Some(&next) => {
-                    if next == quote {
-                        self.pos += 1;
-                        break;
-                    }
-                    // TODO:deal backslash
-                    if next == character_codes::BACKSLASH {}
-                    if Scanner::is_linebreak(next) {
-                        println!("Unterminated string literal.");
-                        break;
-                    }
-                    result.push(next as char);
-                    self.pos += 1;
-                }
-                None => {
-                    println!("Unexpected end of text.");
-                    break;
-                }
+        while let Some(&next) = self.text.get(self.pos) {
+            if next == quote {
+                self.pos += 1;
+                break;
             }
+            // TODO:deal backslash
+            if next == character_codes::BACKSLASH {}
+            if Scanner::is_linebreak(next) {
+                println!("Unterminated string literal.");
+                break;
+            }
+            result.push(next as char);
+            self.pos += 1;
         }
         return result;
     }
@@ -543,13 +531,21 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    // pub fn sub_str(&self, start: usize, end: usize) -> String {
-    //     let mut result = "".to_string();
-    //     let ch=&self.text[start..end];
-
-    //     result.push(current as char);
-    //     return "".to_string();
-    // }
+    pub fn sub_str(&self, start_pos: usize, end_pos: usize) -> String {
+        if start_pos > end_pos {
+            return "".to_string();
+        }
+        let mut result = "".to_string();
+        let mut pos = start_pos;
+        while let Some(&current) = self.text.get(pos) {
+            if pos > end_pos {
+                break;
+            }
+            result.push(current as char);
+            pos += 1;
+        }
+        return result;
+    }
 
     pub fn compare_code(&self, pos: usize, code: u8) -> bool {
         match self.text.get(pos) {
