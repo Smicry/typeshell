@@ -245,7 +245,7 @@ pub mod character_codes {
     pub const _8: u8 = 0x38;
     pub const _9: u8 = 0x39;
 
-    // // lowercase
+    // lowercase
     pub const _A: u8 = 0x61;
     pub const _B: u8 = 0x62;
     pub const _C: u8 = 0x63;
@@ -273,7 +273,7 @@ pub mod character_codes {
     pub const _Y: u8 = 0x79;
     pub const _Z: u8 = 0x7A;
 
-    // // uppercase
+    // uppercase
     pub const A: u8 = 0x41;
     pub const B: u8 = 0x42;
     pub const C: u8 = 0x43;

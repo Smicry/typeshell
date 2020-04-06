@@ -231,8 +231,8 @@ impl<'a> Scanner<'a> {
                         // Single-line comment
                         if self.compare_code(self.pos + 1, character_codes::SLASH) {
                             self.pos += 2;
-                            while let Some(&next) = self.text.get(self.pos) {
-                                if Scanner::is_linebreak(next) {
+                            while let Some(&current) = self.text.get(self.pos) {
+                                if Scanner::is_linebreak(current) {
                                     break;
                                 }
                                 self.pos += 1;
@@ -243,15 +243,15 @@ impl<'a> Scanner<'a> {
                         if self.compare_code(self.pos + 1, character_codes::ASTERISK) {
                             self.pos += 2;
                             let mut comment_closed = false;
-                            while let Some(&next) = self.text.get(self.pos) {
-                                if next == character_codes::ASTERISK
+                            while let Some(&current) = self.text.get(self.pos) {
+                                if current == character_codes::ASTERISK
                                     && self.compare_code(self.pos + 1, character_codes::SLASH)
                                 {
                                     self.pos += 2;
                                     comment_closed = true;
                                     break;
                                 }
-                                if Scanner::is_linebreak(next) {
+                                if Scanner::is_linebreak(current) {
                                     self.preceding_line_break = true;
                                 }
                                 self.pos += 1;
@@ -412,12 +412,11 @@ impl<'a> Scanner<'a> {
                                 self.pos += 1;
                             }
                             self.token_value = self.sub_str(self.token_pos, self.pos);
-                            // TODO:
-                            if default == character_codes::SLASH {}
-                        // if (ch === CharacterCodes.backslash) {
-                        //     tokenValue += scanIdentifierParts();
-                        // }
-                        // return token = getIdentifierToken();
+
+                            if default == character_codes::SLASH {
+                                // TODO:tokenValue += scanIdentifierParts();
+                            }
+                            return self.get_identifier_token();
                         } else if Scanner::is_white_space(default) {
                             self.pos += 1;
                             continue;
@@ -436,53 +435,75 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    pub fn get_identifier_token(&mut self) -> SyntaxKind {
+        if let Some(&token) = TEXT_TO_TOKEN.get(self.token_value.as_str()) {
+            self.token = token;
+            return self.token;
+        }
+        self.token = SyntaxKind::Identifier;
+        return self.token;
+    }
+
     pub fn scan_number(&mut self) -> String {
-        let mut result = "".to_string();
+        let start = self.pos;
         while self.is_digit(self.pos) {
-            match self.text.get(self.pos) {
-                Some(&current) => {
-                    result.push(current as char);
-                    self.pos += 1;
-                }
-                None => break,
-            }
+            self.pos += 1;
         }
         if self.compare_code(self.pos, character_codes::DOT) {
             self.pos += 1;
-            result.push(character_codes::DOT as char);
             while self.is_digit(self.pos) {
-                match self.text.get(self.pos) {
-                    Some(&current) => {
-                        result.push(current as char);
-                        self.pos += 1;
-                    }
-                    None => break,
-                }
+                self.pos += 1;
             }
         }
+        let end = self.pos;
         // TODO:deal scientific notation
         if self.compare_code(self.pos, character_codes::E) || self.compare_code(self.pos, character_codes::_E) {}
-        return result;
+        return self.sub_str(start, end);
     }
 
     pub fn scan_string(&mut self, quote: u8) -> String {
-        let mut result = "".to_string();
         self.pos += 1;
-        while let Some(&next) = self.text.get(self.pos) {
-            if next == quote {
-                self.pos += 1;
-                break;
+        let result: String;
+        let start = self.pos;
+        loop {
+            match self.text.get(self.pos) {
+                None => {
+                    result = self.sub_str(start, self.pos);
+                    println!("Unexpected end of text.");
+                    break;
+                }
+                Some(&current) => {
+                    if current == quote {
+                        result = self.sub_str(start, self.pos);
+                        self.pos += 1;
+                        break;
+                    }
+                    // TODO:deal backslash
+                    if current == character_codes::BACKSLASH {}
+                    if Scanner::is_linebreak(current) {
+                        result = self.sub_str(start, self.pos);
+                        println!("Unterminated string literal.");
+                        break;
+                    }
+                    self.pos += 1;
+                }
             }
-            // TODO:deal backslash
-            if next == character_codes::BACKSLASH {}
-            if Scanner::is_linebreak(next) {
-                println!("Unterminated string literal.");
-                break;
-            }
-            result.push(next as char);
-            self.pos += 1;
         }
         return result;
+    }
+
+    pub fn scan_identifier_parts(&mut self) -> String {
+        let start = self.pos;
+        while let Some(&current) = self.text.get(self.pos) {
+            if Scanner::is_identifier_part(current) {
+                self.pos += 1;
+            } else {
+                break;
+            }
+            // TODO:peekUnicodeEscape
+            //else if current == character_codes::BACKSLASH {}
+        }
+        return self.sub_str(start, self.pos);
     }
 
     pub fn is_identifier_start(ch: u8) -> bool {
@@ -532,13 +553,13 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn sub_str(&self, start_pos: usize, end_pos: usize) -> String {
-        if start_pos > end_pos {
+        if start_pos >= end_pos {
             return "".to_string();
         }
         let mut result = "".to_string();
         let mut pos = start_pos;
         while let Some(&current) = self.text.get(pos) {
-            if pos > end_pos {
+            if pos >= end_pos {
                 break;
             }
             result.push(current as char);
