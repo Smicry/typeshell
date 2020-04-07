@@ -492,20 +492,6 @@ impl<'a> Scanner<'a> {
         return result;
     }
 
-    pub fn scan_identifier_parts(&mut self) -> String {
-        let start = self.pos;
-        while let Some(&current) = self.text.get(self.pos) {
-            if Scanner::is_identifier_part(current) {
-                self.pos += 1;
-            } else {
-                break;
-            }
-            // TODO:peekUnicodeEscape
-            //else if current == character_codes::BACKSLASH {}
-        }
-        return self.sub_str(start, self.pos);
-    }
-
     pub fn is_identifier_start(ch: u8) -> bool {
         // TODO: || ch > character_codes::MAX_ASCII_CHARACTER && isUnicodeIdentifierStart()
         return ch >= character_codes::A && ch <= character_codes::Z
