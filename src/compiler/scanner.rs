@@ -436,9 +436,16 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn get_identifier_token(&mut self) -> SyntaxKind {
-        if let Some(&token) = TEXT_TO_TOKEN.get(self.token_value.as_str()) {
-            self.token = token;
-            return self.token;
+        let temp_len = self.token_value.len();
+        if temp_len >= 2 && temp_len <= 11 {
+            if let Some(ch) = self.token_value.bytes().nth(0) {
+                if ch >= character_codes::_A && ch <= character_codes::_Z {
+                    if let Some(&token) = TEXT_TO_TOKEN.get(self.token_value.as_str()) {
+                        self.token = token;
+                        return self.token;
+                    }
+                }
+            }
         }
         self.token = SyntaxKind::Identifier;
         return self.token;
