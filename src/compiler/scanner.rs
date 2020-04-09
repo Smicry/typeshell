@@ -1,4 +1,4 @@
-use super::types::{character_codes, SyntaxKind};
+use super::types::{character_codes, markers, SyntaxKind};
 use std::collections::HashMap;
 
 lazy_static! {
@@ -232,7 +232,7 @@ impl<'a> Scanner<'a> {
                         if self.compare_code(self.pos + 1, character_codes::SLASH) {
                             self.pos += 2;
                             while let Some(&current) = self.text.get(self.pos) {
-                                if Scanner::is_linebreak(current) {
+                                if Scanner::is_line_break(current) {
                                     break;
                                 }
                                 self.pos += 1;
@@ -251,7 +251,7 @@ impl<'a> Scanner<'a> {
                                     comment_closed = true;
                                     break;
                                 }
-                                if Scanner::is_linebreak(current) {
+                                if Scanner::is_line_break(current) {
                                     self.preceding_line_break = true;
                                 }
                                 self.pos += 1;
@@ -420,7 +420,7 @@ impl<'a> Scanner<'a> {
                         } else if Scanner::is_white_space(default) {
                             self.pos += 1;
                             continue;
-                        } else if Scanner::is_linebreak(default) {
+                        } else if Scanner::is_line_break(default) {
                             self.preceding_line_break = true;
                             self.pos += 1;
                             continue;
@@ -487,7 +487,7 @@ impl<'a> Scanner<'a> {
                     }
                     // TODO:deal backslash
                     if current == character_codes::BACKSLASH {}
-                    if Scanner::is_linebreak(current) {
+                    if Scanner::is_line_break(current) {
                         result = self.sub_str(start, self.pos);
                         println!("Unterminated string literal.");
                         break;
@@ -497,6 +497,22 @@ impl<'a> Scanner<'a> {
             }
         }
         return result;
+    }
+
+    pub fn is_reserved_word(&self) -> bool {
+        if self.token as usize >= markers::FIRST_RESERVED_WORD as usize
+            && self.token as usize <= markers::LAST_RESERVED_WORD as usize
+        {
+            return true;
+        }
+        return false;
+    }
+
+    pub fn is_identifier(&self) -> bool {
+        if self.token == SyntaxKind::Identifier || self.token as usize > markers::LAST_RESERVED_WORD as usize {
+            return true;
+        }
+        return false;
     }
 
     pub fn is_identifier_start(ch: u8) -> bool {
@@ -523,7 +539,7 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn is_octaldigit(&self, pos: usize) -> bool {
+    pub fn is_octal_digit(&self, pos: usize) -> bool {
         match self.text.get(pos) {
             Some(&next) => next >= character_codes::_0 && next <= character_codes::_7,
             None => false,
@@ -538,7 +554,7 @@ impl<'a> Scanner<'a> {
             || ch == character_codes::NON_BREAKING_SPACE;
     }
 
-    pub fn is_linebreak(ch: u8) -> bool {
+    pub fn is_line_break(ch: u8) -> bool {
         match ch {
             character_codes::LINE_FEED | character_codes::CARRIAGE_RETURN | character_codes::NEXT_LINE => true,
             _ => false,
