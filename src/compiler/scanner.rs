@@ -435,6 +435,79 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    pub fn rescan_greater_token(&mut self) -> SyntaxKind {
+        if self.token == SyntaxKind::GreaterThanToken {
+            if self.compare_code(self.pos, character_codes::GREATER_THAN) {
+                if self.compare_code(self.pos + 1, character_codes::GREATER_THAN) {
+                    if self.compare_code(self.pos + 2, character_codes::EQUALS) {
+                        self.pos += 3;
+                        self.token = SyntaxKind::GreaterThanGreaterThanGreaterThanEqualsToken;
+                        return self.token;
+                    }
+                    self.pos += 2;
+                    self.token = SyntaxKind::GreaterThanGreaterThanGreaterThanToken;
+                    return self.token;
+                }
+                if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                    self.pos += 2;
+                    self.token = SyntaxKind::GreaterThanGreaterThanEqualsToken;
+                    return self.token;
+                }
+                self.pos += 1;
+                self.token = SyntaxKind::GreaterThanGreaterThanToken;
+                return self.token;
+            }
+            if self.compare_code(self.pos, character_codes::EQUALS) {
+                self.pos += 1;
+                self.token = SyntaxKind::GreaterThanEqualsToken;
+                return self.token;
+            }
+        }
+        return self.token;
+    }
+
+    pub fn rescan_slash_token(&mut self) -> SyntaxKind {
+        if self.token == SyntaxKind::SlashToken || self.token == SyntaxKind::SlashEqualsToken {
+            let mut p = self.token_pos + 1;
+            let mut in_escape = false;
+            let mut in_character_class = false;
+
+            while let Some(&ch) = self.text.get(p) {
+                // Line breaks are not permissible in the middle of a RegExp.
+                if Scanner::is_line_break(ch) {
+                    return self.token;
+                }
+                if in_escape {
+                    // Parsing an escape character;
+                    // reset the flag and just advance to the next char.
+                    in_escape = false;
+                } else if ch == character_codes::SLASH && !in_character_class {
+                    // A slash within a character class is permissible,
+                    // but in general it signals the end of the regexp literal.
+                    break;
+                } else if ch == character_codes::OPEN_BRACKET {
+                    in_character_class = true;
+                } else if ch == character_codes::BACKSLASH {
+                    in_escape = true;
+                } else if ch == character_codes::CLOSE_BRACKET {
+                    in_character_class = false;
+                }
+                p += 1;
+            }
+            p += 1;
+            while let Some(&current) = self.text.get(p) {
+                if !Scanner::is_identifier_part(current) {
+                    break;
+                }
+                p += 1;
+            }
+            self.pos = p;
+            self.token_value = self.sub_str(self.token_pos, self.pos);
+            self.token = SyntaxKind::RegularExpressionLiteral;
+        }
+        return self.token;
+    }
+
     pub fn get_identifier_token(&mut self) -> SyntaxKind {
         let temp_len = self.token_value.len();
         if temp_len >= 2 && temp_len <= 11 {
