@@ -1,3 +1,9 @@
+pub struct TextRange {
+    pub pos: usize,
+    pub end: usize,
+}
+
+// token > SyntaxKind.Identifer => token is a keyword
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SyntaxKind {
     Unknown,
@@ -202,9 +208,8 @@ pub enum SyntaxKind {
 }
 
 // Markers
-pub mod markers {
+pub mod syntax_kind {
     use super::SyntaxKind;
-
     pub const FIRST_ASSIGNMENT: SyntaxKind = SyntaxKind::EqualsToken;
     pub const LAST_ASSIGNMENT: SyntaxKind = SyntaxKind::CaretEqualsToken;
     pub const FIRST_RESERVED_WORD: SyntaxKind = SyntaxKind::BreakKeyword;
@@ -217,6 +222,39 @@ pub mod markers {
     pub const LAST_TYPE_NODE: SyntaxKind = SyntaxKind::ArrayType;
     pub const FIRST_PUNCTUATION: SyntaxKind = SyntaxKind::OpenBraceToken;
     pub const LAST_PUNCTUATION: SyntaxKind = SyntaxKind::CaretEqualsToken;
+}
+
+pub enum NodeFlags {
+    Export = 0x00000001,          // Declarations
+    Ambient = 0x00000002,         // Declarations
+    QuestionMark = 0x00000004,    // Parameter/Property/Method
+    Rest = 0x00000008,            // Parameter
+    Public = 0x00000010,          // Property/Method
+    Private = 0x00000020,         // Property/Method
+    Static = 0x00000040,          // Property/Method
+    MultiLine = 0x00000080,       // Multi-line array or object literal
+    Synthetic = 0x00000100,       // Synthetic node (for full fidelity)
+    DeclarationFile = 0x00000200, // Node is a .d.ts file
+}
+
+pub mod node_flags {
+    use super::NodeFlags;
+    pub const MODIFIER: usize = NodeFlags::Export as usize
+        | NodeFlags::Ambient as usize
+        | NodeFlags::Public as usize
+        | NodeFlags::Private as usize
+        | NodeFlags::Static as usize;
+}
+
+pub struct Node {
+    pub text_range: TextRange,
+    pub kind: SyntaxKind,
+    pub id: usize,           // Unique id (used to look up NodeLinks)
+    //pub parent: Node,        // Parent node (initialized by binding)
+    //pub symbol: Symbol,      // Symbol declared by node (initialized by binding)
+    //pub locals: SymbolTable, // Locals associated with node (initialized by binding)
+    //pub nextContainer: Node, // Next container in declaration order (initialized by binding)
+    //pub localSymbol: Symbol, // Local symbol declared by node (initialized by binding only for exported nodes)
 }
 
 pub mod character_codes {

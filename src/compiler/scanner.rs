@@ -1,4 +1,4 @@
-use super::types::{character_codes, markers, SyntaxKind};
+use super::types::{character_codes, syntax_kind, SyntaxKind};
 use std::collections::HashMap;
 
 lazy_static! {
@@ -64,18 +64,18 @@ lazy_static! {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct Scanner<'a> {
-    pub text: &'a [u8],
-    pub pos: usize,       // Current position (end position of text of current token)
-    pub len: usize,       // Length of text
-    pub start_pos: usize, // Start position of whitespace before current token
-    pub token_pos: usize, // Start position of text of current token
-    pub token: SyntaxKind,
-    pub token_value: String,
-    pub preceding_line_break: bool,
+    text: &'a [u8],
+    pos: usize,       // Current position (end position of text of current token)
+    len: usize,       // Length of text
+    start_pos: usize, // Start position of whitespace before current token
+    token_pos: usize, // Start position of text of current token
+    token: SyntaxKind,
+    token_value: String,
+    preceding_line_break: bool,
 }
 
 impl<'a> Scanner<'a> {
-    pub fn new(text: &'a str) -> Self {
+    pub fn create_scanner(text: &'a str) -> Self {
         return Scanner {
             text: text.as_bytes(),
             pos: 0,
@@ -86,6 +86,123 @@ impl<'a> Scanner<'a> {
             token_value: "".to_string(),
             preceding_line_break: false,
         };
+    }
+
+    pub fn get_start_pos(&self) -> usize {
+        return self.start_pos;
+    }
+
+    pub fn get_text_pos(&self) -> usize {
+        return self.pos;
+    }
+
+    pub fn get_token(&self) -> SyntaxKind {
+        return self.token;
+    }
+
+    pub fn get_token_pos(&self) -> usize {
+        return self.token_pos;
+    }
+
+    pub fn get_token_text(&self) -> String {
+        return self.sub_str(self.token_pos, self.pos);
+    }
+
+    pub fn get_token_value(&self) -> String {
+        return self.token_value.clone();
+    }
+
+    pub fn has_preceding_line_break(&self) -> bool {
+        return self.preceding_line_break;
+    }
+
+    pub fn is_identifier(&self) -> bool {
+        if self.token == SyntaxKind::Identifier || self.token as usize > syntax_kind::LAST_RESERVED_WORD as usize {
+            return true;
+        }
+        return false;
+    }
+
+    pub fn is_reserved_word(&self) -> bool {
+        if self.token as usize >= syntax_kind::FIRST_RESERVED_WORD as usize
+            && self.token as usize <= syntax_kind::LAST_RESERVED_WORD as usize
+        {
+            return true;
+        }
+        return false;
+    }
+
+    pub fn rescan_greater_token(&mut self) -> SyntaxKind {
+        if self.token == SyntaxKind::GreaterThanToken {
+            if self.compare_code(self.pos, character_codes::GREATER_THAN) {
+                if self.compare_code(self.pos + 1, character_codes::GREATER_THAN) {
+                    if self.compare_code(self.pos + 2, character_codes::EQUALS) {
+                        self.pos += 3;
+                        self.token = SyntaxKind::GreaterThanGreaterThanGreaterThanEqualsToken;
+                        return self.token;
+                    }
+                    self.pos += 2;
+                    self.token = SyntaxKind::GreaterThanGreaterThanGreaterThanToken;
+                    return self.token;
+                }
+                if self.compare_code(self.pos + 1, character_codes::EQUALS) {
+                    self.pos += 2;
+                    self.token = SyntaxKind::GreaterThanGreaterThanEqualsToken;
+                    return self.token;
+                }
+                self.pos += 1;
+                self.token = SyntaxKind::GreaterThanGreaterThanToken;
+                return self.token;
+            }
+            if self.compare_code(self.pos, character_codes::EQUALS) {
+                self.pos += 1;
+                self.token = SyntaxKind::GreaterThanEqualsToken;
+                return self.token;
+            }
+        }
+        return self.token;
+    }
+
+    pub fn rescan_slash_token(&mut self) -> SyntaxKind {
+        if self.token == SyntaxKind::SlashToken || self.token == SyntaxKind::SlashEqualsToken {
+            let mut p = self.token_pos + 1;
+            let mut in_escape = false;
+            let mut in_character_class = false;
+
+            while let Some(&ch) = self.text.get(p) {
+                // Line breaks are not permissible in the middle of a RegExp.
+                if Scanner::is_line_break(ch) {
+                    return self.token;
+                }
+                if in_escape {
+                    // Parsing an escape character;
+                    // reset the flag and just advance to the next char.
+                    in_escape = false;
+                } else if ch == character_codes::SLASH && !in_character_class {
+                    // A slash within a character class is permissible,
+                    // but in general it signals the end of the regexp literal.
+                    break;
+                } else if ch == character_codes::OPEN_BRACKET {
+                    in_character_class = true;
+                } else if ch == character_codes::BACKSLASH {
+                    in_escape = true;
+                } else if ch == character_codes::CLOSE_BRACKET {
+                    in_character_class = false;
+                }
+                p += 1;
+            }
+            p += 1;
+            while let Some(&current) = self.text.get(p) {
+                if !Scanner::is_identifier_part(current) {
+                    break;
+                }
+                p += 1;
+            }
+            self.pos = p;
+            self.token_value = self.sub_str(self.token_pos, self.pos);
+            self.token = SyntaxKind::RegularExpressionLiteral;
+        }
+        return self.token;
     }
 
     pub fn scan(&mut self) -> SyntaxKind {
@@ -435,77 +552,18 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn rescan_greater_token(&mut self) -> SyntaxKind {
-        if self.token == SyntaxKind::GreaterThanToken {
-            if self.compare_code(self.pos, character_codes::GREATER_THAN) {
-                if self.compare_code(self.pos + 1, character_codes::GREATER_THAN) {
-                    if self.compare_code(self.pos + 2, character_codes::EQUALS) {
-                        self.pos += 3;
-                        self.token = SyntaxKind::GreaterThanGreaterThanGreaterThanEqualsToken;
-                        return self.token;
-                    }
-                    self.pos += 2;
-                    self.token = SyntaxKind::GreaterThanGreaterThanGreaterThanToken;
-                    return self.token;
-                }
-                if self.compare_code(self.pos + 1, character_codes::EQUALS) {
-                    self.pos += 2;
-                    self.token = SyntaxKind::GreaterThanGreaterThanEqualsToken;
-                    return self.token;
-                }
-                self.pos += 1;
-                self.token = SyntaxKind::GreaterThanGreaterThanToken;
-                return self.token;
-            }
-            if self.compare_code(self.pos, character_codes::EQUALS) {
-                self.pos += 1;
-                self.token = SyntaxKind::GreaterThanEqualsToken;
-                return self.token;
-            }
-        }
-        return self.token;
+    pub fn set_text(&mut self, text: &'a str) {
+        self.text = text.as_bytes();
+        self.set_text_pos(0)
     }
 
-    pub fn rescan_slash_token(&mut self) -> SyntaxKind {
-        if self.token == SyntaxKind::SlashToken || self.token == SyntaxKind::SlashEqualsToken {
-            let mut p = self.token_pos + 1;
-            let mut in_escape = false;
-            let mut in_character_class = false;
-
-            while let Some(&ch) = self.text.get(p) {
-                // Line breaks are not permissible in the middle of a RegExp.
-                if Scanner::is_line_break(ch) {
-                    return self.token;
-                }
-                if in_escape {
-                    // Parsing an escape character;
-                    // reset the flag and just advance to the next char.
-                    in_escape = false;
-                } else if ch == character_codes::SLASH && !in_character_class {
-                    // A slash within a character class is permissible,
-                    // but in general it signals the end of the regexp literal.
-                    break;
-                } else if ch == character_codes::OPEN_BRACKET {
-                    in_character_class = true;
-                } else if ch == character_codes::BACKSLASH {
-                    in_escape = true;
-                } else if ch == character_codes::CLOSE_BRACKET {
-                    in_character_class = false;
-                }
-                p += 1;
-            }
-            p += 1;
-            while let Some(&current) = self.text.get(p) {
-                if !Scanner::is_identifier_part(current) {
-                    break;
-                }
-                p += 1;
-            }
-            self.pos = p;
-            self.token_value = self.sub_str(self.token_pos, self.pos);
-            self.token = SyntaxKind::RegularExpressionLiteral;
-        }
-        return self.token;
+    pub fn set_text_pos(&mut self, pos: usize) {
+        self.pos = pos;
+        self.start_pos = pos;
+        self.token_pos = pos;
+        self.token = SyntaxKind::Unknown;
+        self.token_value = String::new();
+        self.preceding_line_break = false;
     }
 
     pub fn get_identifier_token(&mut self) -> SyntaxKind {
@@ -524,7 +582,7 @@ impl<'a> Scanner<'a> {
         return self.token;
     }
 
-    pub fn scan_number(&mut self) -> String {
+    fn scan_number(&mut self) -> String {
         let start = self.pos;
         while self.is_digit(self.pos) {
             self.pos += 1;
@@ -541,7 +599,7 @@ impl<'a> Scanner<'a> {
         return self.sub_str(start, end);
     }
 
-    pub fn scan_string(&mut self, quote: u8) -> String {
+    fn scan_string(&mut self, quote: u8) -> String {
         self.pos += 1;
         let result: String;
         let start = self.pos;
@@ -572,23 +630,7 @@ impl<'a> Scanner<'a> {
         return result;
     }
 
-    pub fn is_reserved_word(&self) -> bool {
-        if self.token as usize >= markers::FIRST_RESERVED_WORD as usize
-            && self.token as usize <= markers::LAST_RESERVED_WORD as usize
-        {
-            return true;
-        }
-        return false;
-    }
-
-    pub fn is_identifier(&self) -> bool {
-        if self.token == SyntaxKind::Identifier || self.token as usize > markers::LAST_RESERVED_WORD as usize {
-            return true;
-        }
-        return false;
-    }
-
-    pub fn is_identifier_start(ch: u8) -> bool {
+    fn is_identifier_start(ch: u8) -> bool {
         // TODO: || ch > character_codes::MAX_ASCII_CHARACTER && isUnicodeIdentifierStart()
         return ch >= character_codes::A && ch <= character_codes::Z
             || ch >= character_codes::_A && ch <= character_codes::_Z
@@ -596,7 +638,7 @@ impl<'a> Scanner<'a> {
             || ch == character_codes::UNDERLINE;
     }
 
-    pub fn is_identifier_part(ch: u8) -> bool {
+    fn is_identifier_part(ch: u8) -> bool {
         // TODO: || ch > character_codes::MAX_ASCII_CHARACTER && isUnicodeIdentifierPart()
         return ch >= character_codes::A && ch <= character_codes::Z
             || ch >= character_codes::_A && ch <= character_codes::_Z
@@ -605,21 +647,22 @@ impl<'a> Scanner<'a> {
             || ch == character_codes::UNDERLINE;
     }
 
-    pub fn is_digit(&self, pos: usize) -> bool {
+    fn is_digit(&self, pos: usize) -> bool {
         match self.text.get(pos) {
             Some(&next) => next >= character_codes::_0 && next <= character_codes::_9,
             None => false,
         }
     }
 
-    pub fn is_octal_digit(&self, pos: usize) -> bool {
+    #[allow(dead_code)]
+    fn is_octal_digit(&self, pos: usize) -> bool {
         match self.text.get(pos) {
             Some(&next) => next >= character_codes::_0 && next <= character_codes::_7,
             None => false,
         }
     }
 
-    pub fn is_white_space(ch: u8) -> bool {
+    fn is_white_space(ch: u8) -> bool {
         return ch == character_codes::SPACE
             || ch == character_codes::TAB
             || ch == character_codes::VERTICAL_TAB
@@ -627,18 +670,18 @@ impl<'a> Scanner<'a> {
             || ch == character_codes::NON_BREAKING_SPACE;
     }
 
-    pub fn is_line_break(ch: u8) -> bool {
+    fn is_line_break(ch: u8) -> bool {
         match ch {
             character_codes::LINE_FEED | character_codes::CARRIAGE_RETURN | character_codes::NEXT_LINE => true,
             _ => false,
         }
     }
 
-    pub fn sub_str(&self, start_pos: usize, end_pos: usize) -> String {
+    fn sub_str(&self, start_pos: usize, end_pos: usize) -> String {
         if start_pos >= end_pos {
-            return "".to_string();
+            return String::new();
         }
-        let mut result = "".to_string();
+        let mut result = String::new();
         let mut pos = start_pos;
         while let Some(&current) = self.text.get(pos) {
             if pos >= end_pos {
@@ -650,19 +693,10 @@ impl<'a> Scanner<'a> {
         return result;
     }
 
-    pub fn compare_code(&self, pos: usize, code: u8) -> bool {
+    fn compare_code(&self, pos: usize, code: u8) -> bool {
         match self.text.get(pos) {
             Some(&ch) => ch == code,
             None => false,
         }
-    }
-
-    pub fn set_text_pos(&mut self, pos: usize) {
-        self.pos = pos;
-        self.start_pos = pos;
-        self.token_pos = pos;
-        self.token = SyntaxKind::Unknown;
-        self.token_value = "".to_string();
-        self.preceding_line_break = false;
     }
 }
