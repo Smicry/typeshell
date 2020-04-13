@@ -108,8 +108,8 @@ impl<'a> Scanner<'a> {
         return self.sub_str(self.token_pos, self.pos);
     }
 
-    pub fn get_token_value(&self) -> String {
-        return self.token_value.clone();
+    pub fn get_token_value(&self) -> &str {
+        return self.token_value.as_str();
     }
 
     pub fn has_preceding_line_break(&self) -> bool {
