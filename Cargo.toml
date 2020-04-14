@@ -1,5 +1,5 @@
 [package]
-name = "woody"
+name = "typeshell"
 version = "0.1.0"
 authors = ["Smicry <smicry@vip.qq.com>"]
 edition = "2018"

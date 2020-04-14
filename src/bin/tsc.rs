@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::{env, fs};
-use woody::compiler::scanner::Scanner;
-use woody::compiler::types::*;
+use typeshell::compiler::scanner::Scanner;
+use typeshell::compiler::types::*;
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file = match args.get(1) {
